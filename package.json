@@ -1,0 +1,10 @@
+{
+    "name": "cms-landing",
+    "version": "1.0.0",
+    "description": "CMS Landing Project",
+    "scripts": {
+        "install": "cd server && npm install",
+        "start": "cd server && npm start",
+        "dev": "cd server && npm start"
+    }
+}

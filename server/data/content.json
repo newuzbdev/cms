@@ -1,0 +1,341 @@
+{
+  "seo": {
+    "description": "aasasasass"
+  },
+  "blocks": [
+    {
+      "id": "header",
+      "type": "header",
+      "order": 1,
+      "visible": true,
+      "logoText": "",
+      "logoTagline": "Российское миграционное агентство",
+      "logoImage": "/uploads/1_logo.png",
+      "ratingText": "Наш рейтинг на основе Яндекс",
+      "phone": "+7 (495) 154-33-85",
+      "schedule": "пн-пт: 09:00-18:00",
+      "ctaText": "Бесплатная консультация",
+      "ctaLink": "#contact",
+      "showRating": true,
+      "socials": [
+        {
+          "kind": "telegram",
+          "label": "Telegram",
+          "url": "https://t.me/"
+        },
+        {
+          "kind": "whatsapp",
+          "label": "WhatsApp",
+          "url": "https://wa.me/"
+        }
+      ],
+      "navItems": [
+        {
+          "label": "Услуги",
+          "href": "#services"
+        },
+        {
+          "label": "РВП",
+          "href": "#rvp",
+          "subItems": [
+            { "label": "Отказ в выдаче РВП", "href": "#rvp-refusal" },
+            { "label": "Уведомления по РВП для иностранных граждан", "href": "#rvp-notifications" },
+            { "label": "Что будет, если не подтверждать РВП", "href": "#rvp-confirm" },
+            { "label": "Проверка готовности РВП", "href": "#rvp-check" },
+            { "label": "Квота на РВП", "href": "#rvp-quota" },
+            { "label": "РВП по браку", "href": "#rvp-marriage" }
+          ]
+        },
+        {
+          "label": "ВНЖ",
+          "href": "#vnh"
+        },
+        {
+          "label": "Гражданство",
+          "href": "#citizenship"
+        },
+        {
+          "label": "Разрешение на работу/виза в рф",
+          "href": "#work"
+        },
+        {
+          "label": "Отмена депортации",
+          "href": "#deport"
+        }
+      ]
+    },
+    {
+      "id": "hero",
+      "type": "hero",
+      "order": 2,
+      "visible": true,
+      "titleLine1": "Миграционные услуги",
+      "titleLine2": "в Москве и Московской области",
+      "buttonText": "Задать вопрос",
+      "buttonLink": "#contact",
+      "image": "/uploads/1772900967771-ohbr2gh.png",
+      "imageSmall": "",
+      "infoCard": {
+        "title": "Помогаем иностранным гражданам в оформлении квоты на РВП, РВПО, РВП, ВНЖ, гражданства РФ",
+        "subtitle": "а также организациям, привлекающим иностранных сотрудников в России при оформлении виз для сотрудников по квоте и без квот"
+      }
+    },
+    {
+      "id": "features",
+      "type": "features",
+      "order": 3,
+      "visible": true,
+      "items": [
+        {
+          "title": "Опытные специалисты"
+        },
+        {
+          "title": "Комплексная юридическая поддержка"
+        },
+        {
+          "title": "Гарантия правильности оформления"
+        }
+      ]
+    },
+    {
+      "id": "service_cards",
+      "type": "service_cards",
+      "order": 4,
+      "visible": true,
+      "cards": [
+        {
+          "title": "Организациям",
+          "description": "Полный спектр правовой поддержки для компаний, нанимающих иностранных специалистов в России. Оформление приглашений, разрешений на работу, постановка на миграционный учёт.",
+          "buttonText": "Узнать подробнее",
+          "buttonLink": "#organizations"
+        },
+        {
+          "title": "Иностранным гражданам",
+          "description": "Консультация и помощь иностранным гражданам в процессе получения РВП, ВНЖ, гражданства РФ, патента и разрешения на работу. Подготовка документов и сопровождение.",
+          "buttonText": "Узнать подробнее",
+          "buttonLink": "#foreign"
+        }
+      ]
+    },
+    {
+      "id": "online_services",
+      "type": "online_services",
+      "order": 5,
+      "visible": true,
+      "title": "ГОСУДАРСТВЕННЫЕ ОНЛАЙН СЕРВИСЫ",
+      "titleLine2": "ДЛЯ ИНОСТРАННЫХ ГРАЖДАН",
+      "subtitle": "Здесь вы можете получить необходимую информацию для оформления РВП, ВНЖ и Российского гражданства",
+      "services": [
+        {
+          "title": "Проверить готовность документов РВП",
+          "url": "https://гувм.мвд.рф"
+        },
+        {
+          "title": "Проверить готовность документов ВНЖ",
+          "url": "https://гувм.мвд.рф"
+        },
+        {
+          "title": "Проверка наличия розыскных дел (ФССП)",
+          "url": "https://гувм.мвд.рф"
+        },
+        {
+          "title": "Проверить действительность разрешения на работу и патента",
+          "url": "https://гувм.мвд.рф"
+        },
+        {
+          "title": "Узнать идентификационный номер налогоплательщика (ИНН)",
+          "url": "https://service.nalog.ru"
+        },
+        {
+          "title": "Проверить наличие основания для запрета въезда РФ",
+          "url": "https://гувм.мвд.рф"
+        },
+        {
+          "title": "Запись в миграционный центр Сахарово",
+          "url": "https://гувм.мвд.рф"
+        },
+        {
+          "title": "Наличие исполнительных производств",
+          "url": "https://фссп.рф"
+        }
+      ]
+    },
+    {
+      "id": "footer",
+      "type": "footer",
+      "order": 6,
+      "visible": true,
+      "logoText": "",
+      "logoImage": "/uploads/1_logo.png",
+      "address": "Московская Область, Одинцовский р-н, п. Новоивановское, ул. Калинина 8",
+      "phone": "+7 (495) 127-23-87",
+      "schedule": "Ежедневно с 09:00 до 18:00",
+      "footerCtaText": "Помощь специалиста",
+      "footerCtaLink": "#contact",
+      "legalText": "ООО \"Трудовой консультант\" ИНН 772601001",
+      "socials": [
+        {
+          "kind": "vk",
+          "label": "VK",
+          "url": "https://vk.com/"
+        },
+        {
+          "kind": "dzen",
+          "label": "Dzen",
+          "url": "https://dzen.ru/"
+        },
+        {
+          "kind": "youtube",
+          "label": "YouTube",
+          "url": "https://youtube.com/"
+        },
+        {
+          "kind": "rutube",
+          "label": "Rutube",
+          "url": "https://rutube.ru/"
+        },
+        {
+          "kind": "ok",
+          "label": "OK",
+          "url": "https://ok.ru/"
+        },
+        {
+          "kind": "telegram",
+          "label": "Telegram",
+          "url": "https://t.me/"
+        }
+      ],
+      "govLogos": [
+        {
+          "label": "Правительство МО",
+          "url": "#"
+        },
+        {
+          "label": "Госуслуги МО",
+          "url": "#"
+        },
+        {
+          "label": "Портал Госуслуг",
+          "url": "#"
+        }
+      ],
+      "columns": [
+        {
+          "title": "Получить РВП РФ",
+          "links": [
+            {
+              "text": "Получить квоту на РВП",
+              "url": "#rvp-quota"
+            },
+            {
+              "text": "Получить РВП по браку",
+              "url": "#rvp-marriage"
+            },
+            {
+              "text": "Получить РВП по образованию",
+              "url": "#rvp-edu"
+            }
+          ]
+        },
+        {
+          "title": "Получить ВНЖ РФ",
+          "links": [
+            {
+              "text": "Получить ВНЖ по браку",
+              "url": "#vnh-marriage"
+            },
+            {
+              "text": "Получить ВНЖ по ребенку",
+              "url": "#vnh-child"
+            },
+            {
+              "text": "Получить ВНЖ по родителям",
+              "url": "#vnh-parents"
+            }
+          ]
+        },
+        {
+          "title": "Гражданство РФ",
+          "links": [
+            {
+              "text": "Гражданство РФ в общем порядке",
+              "url": "#cit-general"
+            },
+            {
+              "text": "Гражданство РФ в упрощенном порядке",
+              "url": "#cit-simple"
+            },
+            {
+              "text": "Гражданство РФ по родителям",
+              "url": "#cit-parents"
+            },
+            {
+              "text": "Гражданство РФ по детям",
+              "url": "#cit-children"
+            },
+            {
+              "text": "Гражданство РФ по браку",
+              "url": "#cit-marriage"
+            }
+          ]
+        },
+        {
+          "title": "Оформление рабочей визы",
+          "links": [
+            {
+              "text": "Разрешение на привлечение и использование иностранных работников",
+              "url": "#work-permit"
+            },
+            {
+              "text": "Оформление приглашения для иностранцев",
+              "url": "#work-invitation"
+            },
+            {
+              "text": "Разрешение на работу для студентов",
+              "url": "#work-students"
+            }
+          ]
+        }
+      ],
+      "footerNav": [
+        {
+          "text": "Услуги иностранным гражданам",
+          "url": "#foreign"
+        },
+        {
+          "text": "Отмена депортации",
+          "url": "#deport"
+        },
+        {
+          "text": "Полезные статьи",
+          "url": "#articles"
+        },
+        {
+          "text": "Вопросы и ответы",
+          "url": "#faq"
+        },
+        {
+          "text": "Карта сайта",
+          "url": "#sitemap"
+        },
+        {
+          "text": "Контакты",
+          "url": "#contact"
+        }
+      ],
+      "contactSocials": [
+        {
+          "kind": "whatsapp",
+          "label": "WhatsApp",
+          "url": "https://wa.me/"
+        },
+        {
+          "kind": "telegram",
+          "label": "Telegram",
+          "url": "https://t.me/"
+        }
+      ],
+      "seoTextBottom": "Seo продвижение сайтов и комплексный маркетинг. Заказать рекламу в интернете. Заказать создание сайтов."
+    }
+  ]
+}

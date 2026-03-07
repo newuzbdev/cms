@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Админ-панель — контент лендинга</title>
+  <link rel="stylesheet" href="/admin.css">
+</head>
+<body>
+  <div class="admin">
+    <header class="admin__header">
+      <div class="admin__header-inner">
+        <h1 class="admin__title">Редактирование контента</h1>
+        <a href="/" class="admin__link" target="_blank">Открыть сайт (после сохранения обновите страницу)</a>
+      </div>
+    </header>
+
+    <main class="admin__main">
+      <div class="admin__status" id="status"></div>
+
+      <section class="admin__section" aria-labelledby="admin-seo-title">
+        <h2 id="admin-seo-title" class="admin__section-title">SEO</h2>
+        <div class="admin__card">
+          <label class="admin__label" for="seo-description">Meta Description</label>
+          <textarea id="seo-description" class="admin__textarea" rows="3" placeholder="Описание страницы для поисковиков"></textarea>
+        </div>
+      </section>
+
+      <section class="admin__section" aria-labelledby="admin-blocks-title">
+        <h2 id="admin-blocks-title" class="admin__section-title">Блоки</h2>
+        <div class="admin__blocks" id="blocks-container">
+          <!-- Blocks rendered by admin.js -->
+        </div>
+      </section>
+
+      <div class="admin__actions">
+        <button type="button" class="admin__btn admin__btn_primary" id="save-btn">Сохранить</button>
+      </div>
+    </main>
+  </div>
+
+  <script src="/admin.js"></script>
+</body>
+</html>
