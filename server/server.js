@@ -4,10 +4,12 @@ const express = require('express');
 const multer = require('multer');
 
 const IS_VERCEL = Boolean(process.env.VERCEL);
+const USE_BLOB = IS_VERCEL && process.env.BLOB_READ_WRITE_TOKEN;
+const BLOB_CONTENT_PATH = 'cms-landing/content.json';
+
 const ORIGINAL_DATA_PATH = path.join(__dirname, 'data', 'content.json');
 const ORIGINAL_UPLOADS_DIR = path.join(__dirname, 'uploads');
 
-// On Vercel the filesystem is read-only except /tmp — use /tmp so PUT /api/content and uploads work
 const DATA_PATH = IS_VERCEL
   ? path.join('/tmp', 'cms-landing-data', 'content.json')
   : ORIGINAL_DATA_PATH;
@@ -18,11 +20,33 @@ const UPLOADS_DIR = IS_VERCEL
 const CLIENT_DIR = path.join(__dirname, '..', 'client');
 const PUBLIC_DIR = path.join(__dirname, 'public');
 
+if (USE_BLOB) {
+  try {
+    const { put, get } = require('@vercel/blob');
+    var blobPut = put;
+    var blobGet = get;
+  } catch (e) {
+    // @vercel/blob not available
+  }
+}
+
 [path.dirname(DATA_PATH), UPLOADS_DIR].forEach((dir) => {
   if (!fs.existsSync(dir)) {
     fs.mkdirSync(dir, { recursive: true });
   }
 });
+
+async function streamToText(stream) {
+  if (!stream) return '';
+  const reader = stream.getReader();
+  const chunks = [];
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    chunks.push(value);
+  }
+  return Buffer.concat(chunks).toString('utf8');
+}
 
 const storage = multer.diskStorage({
   destination: (req, file, cb) => cb(null, UPLOADS_DIR),
@@ -42,29 +66,70 @@ const upload = multer({
   }
 });
 
-function readContent() {
-  try {
-    if (IS_VERCEL && !fs.existsSync(DATA_PATH) && fs.existsSync(ORIGINAL_DATA_PATH)) {
-      const raw = fs.readFileSync(ORIGINAL_DATA_PATH, 'utf8');
-      return JSON.parse(raw);
+const DEFAULT_CONTENT = { seo: { description: '' }, blocks: [] };
+
+async function readContent() {
+  if (USE_BLOB && blobGet) {
+    try {
+      const result = await blobGet({
+        urlOrPathname: BLOB_CONTENT_PATH,
+        access: 'private'
+      });
+      if (result && result.stream) {
+        const raw = await streamToText(result.stream);
+        return raw ? JSON.parse(raw) : DEFAULT_CONTENT;
+      }
+    } catch (e) {
+      // Fall through to file fallback
     }
-    const raw = fs.readFileSync(DATA_PATH, 'utf8');
-    return JSON.parse(raw);
+  }
+  try {
+    let raw;
+    if (IS_VERCEL && !fs.existsSync(DATA_PATH) && fs.existsSync(ORIGINAL_DATA_PATH)) {
+      raw = fs.readFileSync(ORIGINAL_DATA_PATH, 'utf8');
+    } else {
+      raw = fs.readFileSync(DATA_PATH, 'utf8');
+    }
+    const data = JSON.parse(raw);
+    if (USE_BLOB && blobPut && data && (data.blocks?.length || data.seo)) {
+      try {
+        await blobPut({
+          pathname: BLOB_CONTENT_PATH,
+          body: raw,
+          access: 'private',
+          contentType: 'application/json',
+          addRandomSuffix: false,
+          allowOverwrite: true
+        });
+      } catch (_) {}
+    }
+    return data;
   } catch (e) {
-    return { seo: { description: '' }, blocks: [] };
+    return DEFAULT_CONTENT;
   }
 }
 
-function writeContent(data) {
+async function writeContent(data) {
+  if (USE_BLOB && blobPut) {
+    await blobPut({
+      pathname: BLOB_CONTENT_PATH,
+      body: JSON.stringify(data, null, 2),
+      access: 'private',
+      contentType: 'application/json',
+      addRandomSuffix: false,
+      allowOverwrite: true
+    });
+    return;
+  }
   fs.writeFileSync(DATA_PATH, JSON.stringify(data, null, 2), 'utf8');
 }
 
 const app = express();
 app.use(express.json());
 
-app.get('/api/content', (req, res) => {
+app.get('/api/content', async (req, res) => {
   try {
-    const data = readContent();
+    const data = await readContent();
     res.set('Cache-Control', 'no-store, no-cache, must-revalidate');
     res.json(data);
   } catch (e) {
@@ -72,19 +137,19 @@ app.get('/api/content', (req, res) => {
   }
 });
 
-app.put('/api/content', (req, res) => {
+app.put('/api/content', async (req, res) => {
   try {
     const data = req.body;
     if (!data || typeof data !== 'object') {
       return res.status(400).json({ error: 'Invalid body' });
     }
-    const current = readContent();
+    const current = await readContent();
     const merged = {
       seo: data.seo != null ? { ...current.seo, ...data.seo } : current.seo,
       blocks: Array.isArray(data.blocks) ? data.blocks : current.blocks
     };
-    writeContent(merged);
-    const written = readContent();
+    await writeContent(merged);
+    const written = await readContent();
     res.set('Cache-Control', 'no-store');
     res.json(written);
   } catch (e) {
@@ -104,19 +169,19 @@ app.post('/api/upload', (req, res) => {
   });
 });
 
-app.put('/api/blocks/reorder', (req, res) => {
+app.put('/api/blocks/reorder', async (req, res) => {
   try {
     const { blocks } = req.body;
     if (!Array.isArray(blocks)) {
       return res.status(400).json({ error: 'blocks must be an array' });
     }
-    const data = readContent();
+    const data = await readContent();
     const reordered = blocks.map((b, i) => ({
       ...(typeof b === 'object' ? b : {}),
       order: i + 1
     }));
     data.blocks = reordered;
-    writeContent(data);
+    await writeContent(data);
     res.json(data);
   } catch (e) {
     res.status(500).json({ error: 'Failed to reorder blocks' });

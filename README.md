@@ -68,6 +68,19 @@ The app usually runs at http://localhost:3001.
 
 ---
 
+## Deploying to Vercel (persistent admin content)
+
+To keep admin panel changes **persistent** on Vercel (so they survive reloads and new deployments), add **Vercel Blob** storage:
+
+1. In the [Vercel Dashboard](https://vercel.com/dashboard), open your project.
+2. Go to **Storage** → **Create Database** → choose **Blob**.
+3. Create a Blob store and link it to this project. Vercel will add the `BLOB_READ_WRITE_TOKEN` environment variable automatically.
+4. Redeploy the project.
+
+After that, content saved in the admin panel is stored in Blob and persists across reloads and deployments. Without Blob, saves work but content can reset when the serverless instance changes.
+
+---
+
 ## Project Structure
 
 ```text
