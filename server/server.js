@@ -22,9 +22,10 @@ const PUBLIC_DIR = path.join(__dirname, 'public');
 
 if (USE_BLOB) {
   try {
-    const { put, get } = require('@vercel/blob');
-    var blobPut = put;
-    var blobGet = get;
+    const blob = require('@vercel/blob');
+    var blobPut = blob.put;
+    var blobGet = blob.get;
+    var blobList = blob.list;
   } catch (e) {
     // @vercel/blob not available
   }
@@ -69,41 +70,56 @@ const upload = multer({
 const DEFAULT_CONTENT = { seo: { description: '' }, blocks: [] };
 
 async function readContent() {
-  if (USE_BLOB && blobGet) {
+  if (USE_BLOB && blobList && blobGet) {
     try {
-      const result = await blobGet({
-        urlOrPathname: BLOB_CONTENT_PATH,
-        access: 'private'
-      });
-      if (result && result.stream) {
-        const raw = await streamToText(result.stream);
-        return raw ? JSON.parse(raw) : DEFAULT_CONTENT;
+      const { blobs } = await blobList({ prefix: 'cms-landing/' });
+      const contentBlob = (blobs && blobs.length)
+        ? (blobs.find((b) => (b.pathname || '').endsWith('content.json')) || blobs[0])
+        : null;
+      if (contentBlob && contentBlob.url) {
+        const result = await blobGet({
+          urlOrPathname: contentBlob.url,
+          access: 'private'
+        });
+        if (result && result.stream) {
+          const raw = await streamToText(result.stream);
+          return raw ? JSON.parse(raw) : DEFAULT_CONTENT;
+        }
       }
+      // No blob yet: seed once from bundled file, then from now on list will find it
+      if (fs.existsSync(ORIGINAL_DATA_PATH)) {
+        const raw = fs.readFileSync(ORIGINAL_DATA_PATH, 'utf8');
+        const data = JSON.parse(raw);
+        if (blobPut) {
+          await blobPut({
+            pathname: BLOB_CONTENT_PATH,
+            body: raw,
+            access: 'private',
+            contentType: 'application/json',
+            addRandomSuffix: false,
+            allowOverwrite: true
+          });
+        }
+        return data;
+      }
+      return DEFAULT_CONTENT;
     } catch (e) {
-      // Fall through to file fallback
+      if (fs.existsSync(ORIGINAL_DATA_PATH)) {
+        try {
+          const raw = fs.readFileSync(ORIGINAL_DATA_PATH, 'utf8');
+          return JSON.parse(raw);
+        } catch (_) {}
+      }
+      return DEFAULT_CONTENT;
     }
   }
   try {
-    let raw;
     if (IS_VERCEL && !fs.existsSync(DATA_PATH) && fs.existsSync(ORIGINAL_DATA_PATH)) {
-      raw = fs.readFileSync(ORIGINAL_DATA_PATH, 'utf8');
-    } else {
-      raw = fs.readFileSync(DATA_PATH, 'utf8');
+      const raw = fs.readFileSync(ORIGINAL_DATA_PATH, 'utf8');
+      return JSON.parse(raw);
     }
-    const data = JSON.parse(raw);
-    if (USE_BLOB && blobPut && data && (data.blocks?.length || data.seo)) {
-      try {
-        await blobPut({
-          pathname: BLOB_CONTENT_PATH,
-          body: raw,
-          access: 'private',
-          contentType: 'application/json',
-          addRandomSuffix: false,
-          allowOverwrite: true
-        });
-      } catch (_) {}
-    }
-    return data;
+    const raw = fs.readFileSync(DATA_PATH, 'utf8');
+    return JSON.parse(raw);
   } catch (e) {
     return DEFAULT_CONTENT;
   }
