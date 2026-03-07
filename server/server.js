@@ -125,8 +125,14 @@ app.get('*', function (req, res, next) {
 });
 
 const PORT = process.env.PORT || 3001;
-app.listen(PORT, () => {
-  console.log(`Server running at http://localhost:${PORT}`);
-  console.log(`Public page: http://localhost:${PORT}/`);
-  console.log(`Admin panel: http://localhost:${PORT}/admin`);
-});
+
+// On Vercel, the app is used as a serverless function; don't call listen().
+if (!process.env.VERCEL) {
+  app.listen(PORT, () => {
+    console.log(`Server running at http://localhost:${PORT}`);
+    console.log(`Public page: http://localhost:${PORT}/`);
+    console.log(`Admin panel: http://localhost:${PORT}/admin`);
+  });
+}
+
+module.exports = { app };
