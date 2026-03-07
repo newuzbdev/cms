@@ -3,8 +3,18 @@ const fs = require('fs');
 const express = require('express');
 const multer = require('multer');
 
-const DATA_PATH = path.join(__dirname, 'data', 'content.json');
-const UPLOADS_DIR = path.join(__dirname, 'uploads');
+const IS_VERCEL = Boolean(process.env.VERCEL);
+const ORIGINAL_DATA_PATH = path.join(__dirname, 'data', 'content.json');
+const ORIGINAL_UPLOADS_DIR = path.join(__dirname, 'uploads');
+
+// On Vercel the filesystem is read-only except /tmp — use /tmp so PUT /api/content and uploads work
+const DATA_PATH = IS_VERCEL
+  ? path.join('/tmp', 'cms-landing-data', 'content.json')
+  : ORIGINAL_DATA_PATH;
+const UPLOADS_DIR = IS_VERCEL
+  ? path.join('/tmp', 'cms-landing-data', 'uploads')
+  : ORIGINAL_UPLOADS_DIR;
+
 const CLIENT_DIR = path.join(__dirname, '..', 'client');
 const PUBLIC_DIR = path.join(__dirname, 'public');
 
@@ -34,6 +44,10 @@ const upload = multer({
 
 function readContent() {
   try {
+    if (IS_VERCEL && !fs.existsSync(DATA_PATH) && fs.existsSync(ORIGINAL_DATA_PATH)) {
+      const raw = fs.readFileSync(ORIGINAL_DATA_PATH, 'utf8');
+      return JSON.parse(raw);
+    }
     const raw = fs.readFileSync(DATA_PATH, 'utf8');
     return JSON.parse(raw);
   } catch (e) {
