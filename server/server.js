@@ -15,6 +15,9 @@ function getBlobToken() {
 }
 const BLOB_READ_WRITE_TOKEN = getBlobToken();
 const USE_BLOB = IS_VERCEL && BLOB_READ_WRITE_TOKEN;
+if (BLOB_READ_WRITE_TOKEN && !process.env.BLOB_READ_WRITE_TOKEN) {
+  process.env.BLOB_READ_WRITE_TOKEN = BLOB_READ_WRITE_TOKEN;
+}
 const BLOB_CONTENT_PATH = 'cms-landing/content.json';
 
 const ORIGINAL_DATA_PATH = path.join(__dirname, 'data', 'content.json');
@@ -84,17 +87,15 @@ const upload = multer({
 
 const DEFAULT_CONTENT = { seo: { description: '' }, blocks: [] };
 
-const blobOpts = () => (BLOB_READ_WRITE_TOKEN ? { access: 'private', token: BLOB_READ_WRITE_TOKEN } : { access: 'private' });
-
 async function readContentFromBlob() {
   if (!USE_BLOB || !blobList || !blobGet) return null;
   try {
-    const { blobs } = await blobList({ prefix: 'cms-landing/', ...blobOpts() });
+    const { blobs } = await blobList({ prefix: 'cms-landing/', access: 'private' });
     const contentBlob = (blobs && blobs.length)
       ? (blobs.find((b) => (b.pathname || '').endsWith('content.json')) || blobs[0])
       : null;
     if (!contentBlob || !contentBlob.url) return null;
-    const result = await blobGet(contentBlob.url, blobOpts());
+    const result = await blobGet(contentBlob.url, { access: 'private' });
     if (result && result.stream) {
       const raw = await streamToText(result.stream);
       return raw ? JSON.parse(raw) : null;
@@ -139,7 +140,7 @@ async function writeContent(data) {
   if (USE_BLOB && blobPut) {
     const body = JSON.stringify(data, null, 2);
     await blobPut(BLOB_CONTENT_PATH, body, {
-      ...blobOpts(),
+      access: 'private',
       contentType: 'application/json',
       addRandomSuffix: false,
       allowOverwrite: true
@@ -184,6 +185,7 @@ app.put('/api/content', async (req, res) => {
     if (IS_VERCEL && !BLOB_READ_WRITE_TOKEN) {
       return res.status(503).json({
         error: 'Storage not configured',
+        hint: 'Add a Vercel Blob store: Project → Storage → Create Database → Blob, then redeploy.'
       });
     }
     const current = await readContent();
@@ -197,9 +199,10 @@ app.put('/api/content', async (req, res) => {
     res.json(written);
   } catch (e) {
     console.error('Save content error:', e && e.message);
+    const msg = e && (e.message || String(e));
     res.status(500).json({
       error: 'Failed to save content',
-      detail: process.env.NODE_ENV === 'development' ? (e && e.message) : undefined
+      hint: msg || undefined
     });
   }
 });
