@@ -87,9 +87,24 @@ const upload = multer({
 
 const DEFAULT_CONTENT = { seo: { description: '' }, blocks: [] };
 
+const BLOB_POINTER_PATH = 'cms-landing/pointer.txt';
+
 async function readContentFromBlob() {
   if (!USE_BLOB || !blobGet) return null;
   const opts = { access: 'public' };
+  try {
+    const pointerResult = await blobGet(BLOB_POINTER_PATH, opts);
+    if (pointerResult && pointerResult.stream) {
+      const url = (await streamToText(pointerResult.stream)).trim();
+      if (url) {
+        const result = await blobGet(url, opts);
+        if (result && result.stream) {
+          const raw = await streamToText(result.stream);
+          return raw ? JSON.parse(raw) : null;
+        }
+      }
+    }
+  } catch (_) {}
   try {
     const result = await blobGet(BLOB_CONTENT_PATH, opts);
     if (result && result.stream) {
@@ -150,12 +165,21 @@ async function readContent() {
 async function writeContent(data) {
   if (USE_BLOB && blobPut) {
     const body = JSON.stringify(data, null, 2);
-    await blobPut(BLOB_CONTENT_PATH, body, {
+    const putResult = await blobPut(BLOB_CONTENT_PATH, body, {
       access: 'public',
       contentType: 'application/json',
       addRandomSuffix: false,
       allowOverwrite: true
     });
+    const contentUrl = putResult && putResult.url ? putResult.url : null;
+    if (contentUrl) {
+      await blobPut(BLOB_POINTER_PATH, contentUrl, {
+        access: 'public',
+        contentType: 'text/plain',
+        addRandomSuffix: false,
+        allowOverwrite: true
+      });
+    }
     return;
   }
   fs.writeFileSync(DATA_PATH, JSON.stringify(data, null, 2), 'utf8');
@@ -180,7 +204,9 @@ app.get('/api/storage-status', (req, res) => {
 app.get('/api/content', async (req, res) => {
   try {
     const data = await readContent();
-    res.set('Cache-Control', 'no-store, no-cache, must-revalidate');
+    res.set('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');
+    res.set('Pragma', 'no-cache');
+    res.set('Expires', '0');
     res.json(data);
   } catch (e) {
     res.status(500).json({ error: 'Failed to read content' });
