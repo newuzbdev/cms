@@ -39,13 +39,18 @@ if (USE_BLOB) {
 
 async function streamToText(stream) {
   if (!stream) return '';
-  const reader = stream.getReader();
-  const chunks = [];
-  while (true) {
-    const { done, value } = await reader.read();
-    if (done) break;
-    chunks.push(value);
+  if (typeof stream.getReader === 'function') {
+    const reader = stream.getReader();
+    const chunks = [];
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      chunks.push(value);
+    }
+    return Buffer.concat(chunks).toString('utf8');
   }
+  const chunks = [];
+  for await (const chunk of stream) chunks.push(chunk);
   return Buffer.concat(chunks).toString('utf8');
 }
 
@@ -72,10 +77,7 @@ const DEFAULT_CONTENT = { seo: { description: '' }, blocks: [] };
 async function readContentFromBlob() {
   if (!USE_BLOB || !blobGet) return null;
   try {
-    const result = await blobGet({
-      urlOrPathname: BLOB_CONTENT_PATH,
-      access: 'private'
-    });
+    const result = await blobGet(BLOB_CONTENT_PATH, { access: 'private' });
     if (result && result.stream) {
       const raw = await streamToText(result.stream);
       return raw ? JSON.parse(raw) : null;
@@ -98,10 +100,7 @@ async function readContent() {
         ? (blobs.find((b) => (b.pathname || '').endsWith('content.json')) || blobs[0])
         : null;
       if (contentBlob && contentBlob.url) {
-        const result = await blobGet({
-          urlOrPathname: contentBlob.url,
-          access: 'private'
-        });
+        const result = await blobGet(contentBlob.url, { access: 'private' });
         if (result && result.stream) {
           const raw = await streamToText(result.stream);
           data = raw ? JSON.parse(raw) : null;
@@ -137,9 +136,8 @@ async function readContent() {
 
 async function writeContent(data) {
   if (USE_BLOB && blobPut) {
-    await blobPut({
-      pathname: BLOB_CONTENT_PATH,
-      body: JSON.stringify(data, null, 2),
+    const body = JSON.stringify(data, null, 2);
+    await blobPut(BLOB_CONTENT_PATH, body, {
       access: 'private',
       contentType: 'application/json',
       addRandomSuffix: false,
