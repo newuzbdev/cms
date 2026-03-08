@@ -26,8 +26,13 @@
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload)
     }).then(function (r) {
-      if (!r.ok) throw new Error('Failed to save');
-      return r.json();
+      return r.json().then(function (data) {
+        if (!r.ok) {
+          var msg = (data && data.hint) ? data.hint : (data && data.error) ? data.error : 'Failed to save';
+          throw new Error(msg);
+        }
+        return data;
+      });
     });
   }
 
@@ -474,6 +479,18 @@
         renderBlocks();
       })
       .catch(() => showStatus('Не удалось загрузить контент', true));
+
+    fetch('/api/storage-status', { cache: 'no-store' })
+      .then((r) => r.json())
+      .then(function (info) {
+        const el = document.getElementById('storage-warning');
+        if (!el || !info) return;
+        if (info.persistent === false) {
+          el.textContent = info.message || 'Changes will not persist. Add Vercel Blob storage and redeploy.';
+          el.removeAttribute('hidden');
+        }
+      })
+      .catch(function () {});
   }
 
   if (document.readyState === 'loading') {

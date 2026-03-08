@@ -70,14 +70,14 @@ The app usually runs at http://localhost:3001.
 
 ## Deploying to Vercel (persistent admin content)
 
-To keep admin panel changes **persistent** on Vercel (so they survive reloads and new deployments), add **Vercel Blob** storage:
+**If your admin changes disappear after reload**, you need to add **Vercel Blob** storage (Vercel’s serverless disk is temporary, so without Blob nothing persists).
 
-1. In the [Vercel Dashboard](https://vercel.com/dashboard), open your project.
-2. Go to **Storage** → **Create Database** → choose **Blob**.
-3. Create a Blob store and link it to this project. Vercel will add the `BLOB_READ_WRITE_TOKEN` environment variable automatically.
-4. Redeploy the project.
+1. Open the [Vercel Dashboard](https://vercel.com/dashboard) and select your project.
+2. Go to the **Storage** tab → **Create Database** → choose **Blob**.
+3. Create a new Blob store, name it (e.g. `cms-store`), and **connect it to this project** when asked.
+4. **Redeploy** the project (Deployments → … → Redeploy, or push a new commit).
 
-After that, content saved in the admin panel is stored in Blob and persists across reloads and deployments. Without Blob, saves work but content can reset when the serverless instance changes.
+Vercel will set `BLOB_READ_WRITE_TOKEN` for your project. After redeploying, saving in the admin will persist across reloads. If you see “Storage not configured” when saving, the Blob store is not linked or you need to redeploy.
 
 ---
 

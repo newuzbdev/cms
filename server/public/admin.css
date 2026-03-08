@@ -66,6 +66,21 @@ body {
   padding: 1.5rem;
 }
 
+.admin__storage-warning {
+  margin-bottom: 1rem;
+  padding: 0.875rem 1rem;
+  background: #fef3c7;
+  border: 1px solid #f59e0b;
+  border-radius: 8px;
+  color: #92400e;
+  font-size: 0.9375rem;
+  line-height: 1.4;
+}
+
+.admin__storage-warning[hidden] {
+  display: none;
+}
+
 .admin__status {
   margin-bottom: 1.5rem;
   padding: 0.75rem 1rem;

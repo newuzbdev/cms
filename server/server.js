@@ -75,9 +75,14 @@ const upload = multer({
 const DEFAULT_CONTENT = { seo: { description: '' }, blocks: [] };
 
 async function readContentFromBlob() {
-  if (!USE_BLOB || !blobGet) return null;
+  if (!USE_BLOB || !blobList || !blobGet) return null;
   try {
-    const result = await blobGet(BLOB_CONTENT_PATH, { access: 'private' });
+    const { blobs } = await blobList({ prefix: 'cms-landing/' });
+    const contentBlob = (blobs && blobs.length)
+      ? (blobs.find((b) => (b.pathname || '').endsWith('content.json')) || blobs[0])
+      : null;
+    if (!contentBlob || !contentBlob.url) return null;
+    const result = await blobGet(contentBlob.url, { access: 'private' });
     if (result && result.stream) {
       const raw = await streamToText(result.stream);
       return raw ? JSON.parse(raw) : null;
@@ -87,26 +92,10 @@ async function readContentFromBlob() {
 }
 
 async function readContent() {
-  if (USE_BLOB && blobGet) {
+  if (USE_BLOB) {
     try {
-      let data = await readContentFromBlob();
+      const data = await readContentFromBlob();
       if (data) return data;
-      let blobs = [];
-      if (blobList) {
-        const listRes = await blobList({ prefix: 'cms-landing/' });
-        blobs = listRes.blobs || [];
-      }
-      const contentBlob = (blobs && blobs.length)
-        ? (blobs.find((b) => (b.pathname || '').endsWith('content.json')) || blobs[0])
-        : null;
-      if (contentBlob && contentBlob.url) {
-        const result = await blobGet(contentBlob.url, { access: 'private' });
-        if (result && result.stream) {
-          const raw = await streamToText(result.stream);
-          data = raw ? JSON.parse(raw) : null;
-          if (data) return data;
-        }
-      }
       if (fs.existsSync(ORIGINAL_DATA_PATH)) {
         const raw = fs.readFileSync(ORIGINAL_DATA_PATH, 'utf8');
         return JSON.parse(raw);
@@ -151,6 +140,19 @@ async function writeContent(data) {
 const app = express();
 app.use(express.json());
 
+app.get('/api/storage-status', (req, res) => {
+  if (!IS_VERCEL) {
+    return res.json({ persistent: true, message: 'Local storage (saves persist).' });
+  }
+  if (process.env.BLOB_READ_WRITE_TOKEN) {
+    return res.json({ persistent: true, message: 'Vercel Blob (saves persist).' });
+  }
+  res.json({
+    persistent: false,
+    message: 'Changes will not persist after reload. Add a Vercel Blob store in your project: Storage → Create Database → Blob, then redeploy.'
+  });
+});
+
 app.get('/api/content', async (req, res) => {
   try {
     const data = await readContent();
@@ -167,6 +169,12 @@ app.put('/api/content', async (req, res) => {
     if (!data || typeof data !== 'object') {
       return res.status(400).json({ error: 'Invalid body' });
     }
+    if (IS_VERCEL && !process.env.BLOB_READ_WRITE_TOKEN) {
+      return res.status(503).json({
+        error: 'Storage not configured',
+        hint: 'Add a Vercel Blob store: Project → Storage → Create Database → Blob, then redeploy.'
+      });
+    }
     const current = await readContent();
     const merged = {
       seo: data.seo != null ? { ...current.seo, ...data.seo } : current.seo,
@@ -177,7 +185,11 @@ app.put('/api/content', async (req, res) => {
     res.set('Cache-Control', 'no-store');
     res.json(written);
   } catch (e) {
-    res.status(500).json({ error: 'Failed to save content' });
+    console.error('Save content error:', e && e.message);
+    res.status(500).json({
+      error: 'Failed to save content',
+      detail: process.env.NODE_ENV === 'development' ? (e && e.message) : undefined
+    });
   }
 });
 
