@@ -465,7 +465,9 @@
           pageData = data;
           showStatus('Сохранено. Обновите страницу сайта (F5), чтобы увидеть изменения.');
         })
-        .catch(function () { showStatus('Ошибка сохранения', true); })
+        .catch(function (err) {
+          showStatus(err && err.message ? err.message : 'Ошибка сохранения', true);
+        })
         .finally(function () { saveBtn.disabled = false; });
     };
 
