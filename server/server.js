@@ -88,19 +88,30 @@ const upload = multer({
 const DEFAULT_CONTENT = { seo: { description: '' }, blocks: [] };
 
 async function readContentFromBlob() {
-  if (!USE_BLOB || !blobList || !blobGet) return null;
+  if (!USE_BLOB || !blobGet) return null;
+  const opts = { access: 'public' };
   try {
-    const { blobs } = await blobList({ prefix: 'cms-landing/', access: 'public' });
-    const contentBlob = (blobs && blobs.length)
-      ? (blobs.find((b) => (b.pathname || '').endsWith('content.json')) || blobs[0])
-      : null;
-    if (!contentBlob || !contentBlob.url) return null;
-    const result = await blobGet(contentBlob.url, { access: 'public' });
+    const result = await blobGet(BLOB_CONTENT_PATH, opts);
     if (result && result.stream) {
       const raw = await streamToText(result.stream);
       return raw ? JSON.parse(raw) : null;
     }
   } catch (_) {}
+  if (blobList) {
+    try {
+      const { blobs } = await blobList({ prefix: 'cms-landing/', access: 'public' });
+      const contentBlob = (blobs && blobs.length)
+        ? (blobs.find((b) => (b.pathname || '').endsWith('content.json')) || blobs[0])
+        : null;
+      if (contentBlob && contentBlob.url) {
+        const result = await blobGet(contentBlob.url, opts);
+        if (result && result.stream) {
+          const raw = await streamToText(result.stream);
+          return raw ? JSON.parse(raw) : null;
+        }
+      }
+    } catch (_) {}
+  }
   return null;
 }
 
