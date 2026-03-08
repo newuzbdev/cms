@@ -4,7 +4,17 @@ const express = require('express');
 const multer = require('multer');
 
 const IS_VERCEL = Boolean(process.env.VERCEL);
-const USE_BLOB = IS_VERCEL && process.env.BLOB_READ_WRITE_TOKEN;
+function getBlobToken() {
+  if (process.env.BLOB_READ_WRITE_TOKEN) return process.env.BLOB_READ_WRITE_TOKEN;
+  if (process.env.BLOB_READ_WRITE_TOKEN_READ_WRITE_TOKEN) return process.env.BLOB_READ_WRITE_TOKEN_READ_WRITE_TOKEN;
+  for (const key of Object.keys(process.env)) {
+    if (key.includes('BLOB') && key.includes('TOKEN') && process.env[key])
+      return process.env[key];
+  }
+  return null;
+}
+const BLOB_READ_WRITE_TOKEN = getBlobToken();
+const USE_BLOB = IS_VERCEL && BLOB_READ_WRITE_TOKEN;
 const BLOB_CONTENT_PATH = 'cms-landing/content.json';
 
 const ORIGINAL_DATA_PATH = path.join(__dirname, 'data', 'content.json');
@@ -74,15 +84,17 @@ const upload = multer({
 
 const DEFAULT_CONTENT = { seo: { description: '' }, blocks: [] };
 
+const blobOpts = () => (BLOB_READ_WRITE_TOKEN ? { access: 'private', token: BLOB_READ_WRITE_TOKEN } : { access: 'private' });
+
 async function readContentFromBlob() {
   if (!USE_BLOB || !blobList || !blobGet) return null;
   try {
-    const { blobs } = await blobList({ prefix: 'cms-landing/' });
+    const { blobs } = await blobList({ prefix: 'cms-landing/', ...blobOpts() });
     const contentBlob = (blobs && blobs.length)
       ? (blobs.find((b) => (b.pathname || '').endsWith('content.json')) || blobs[0])
       : null;
     if (!contentBlob || !contentBlob.url) return null;
-    const result = await blobGet(contentBlob.url, { access: 'private' });
+    const result = await blobGet(contentBlob.url, blobOpts());
     if (result && result.stream) {
       const raw = await streamToText(result.stream);
       return raw ? JSON.parse(raw) : null;
@@ -127,7 +139,7 @@ async function writeContent(data) {
   if (USE_BLOB && blobPut) {
     const body = JSON.stringify(data, null, 2);
     await blobPut(BLOB_CONTENT_PATH, body, {
-      access: 'private',
+      ...blobOpts(),
       contentType: 'application/json',
       addRandomSuffix: false,
       allowOverwrite: true
@@ -144,7 +156,7 @@ app.get('/api/storage-status', (req, res) => {
   if (!IS_VERCEL) {
     return res.json({ persistent: true, message: 'Local storage (saves persist).' });
   }
-  if (process.env.BLOB_READ_WRITE_TOKEN) {
+  if (BLOB_READ_WRITE_TOKEN) {
     return res.json({ persistent: true, message: 'Vercel Blob (saves persist).' });
   }
   res.json({
@@ -169,10 +181,9 @@ app.put('/api/content', async (req, res) => {
     if (!data || typeof data !== 'object') {
       return res.status(400).json({ error: 'Invalid body' });
     }
-    if (IS_VERCEL && !process.env.BLOB_READ_WRITE_TOKEN) {
+    if (IS_VERCEL && !BLOB_READ_WRITE_TOKEN) {
       return res.status(503).json({
         error: 'Storage not configured',
-        hint: 'Add a Vercel Blob store: Project → Storage → Create Database → Blob, then redeploy.'
       });
     }
     const current = await readContent();
