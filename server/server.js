@@ -89,41 +89,52 @@ const DEFAULT_CONTENT = { seo: { description: '' }, blocks: [] };
 
 const BLOB_POINTER_PATH = 'cms-landing/pointer.txt';
 
+function fetchJson(url) {
+  return fetch(url, { cache: 'no-store' }).then((r) => (r.ok ? r.json() : null));
+}
+
 async function readContentFromBlob() {
-  if (!USE_BLOB || !blobGet) return null;
+  if (!USE_BLOB) return null;
   const opts = { access: 'public' };
-  try {
-    const pointerResult = await blobGet(BLOB_POINTER_PATH, opts);
-    if (pointerResult && pointerResult.stream) {
-      const url = (await streamToText(pointerResult.stream)).trim();
-      if (url) {
-        const result = await blobGet(url, opts);
-        if (result && result.stream) {
-          const raw = await streamToText(result.stream);
-          return raw ? JSON.parse(raw) : null;
-        }
-      }
-    }
-  } catch (_) {}
-  try {
-    const result = await blobGet(BLOB_CONTENT_PATH, opts);
-    if (result && result.stream) {
-      const raw = await streamToText(result.stream);
-      return raw ? JSON.parse(raw) : null;
-    }
-  } catch (_) {}
   if (blobList) {
     try {
       const { blobs } = await blobList({ prefix: 'cms-landing/', access: 'public' });
       const contentBlob = (blobs && blobs.length)
         ? (blobs.find((b) => (b.pathname || '').endsWith('content.json')) || blobs[0])
         : null;
-      if (contentBlob && contentBlob.url) {
-        const result = await blobGet(contentBlob.url, opts);
-        if (result && result.stream) {
-          const raw = await streamToText(result.stream);
-          return raw ? JSON.parse(raw) : null;
+      const pointerBlob = blobs && blobs.find((b) => (b.pathname || '').endsWith('pointer.txt'));
+      if (pointerBlob && pointerBlob.url) {
+        const res = await fetch(pointerBlob.url, { cache: 'no-store' });
+        if (res.ok) {
+          const contentUrl = (await res.text()).trim();
+          if (contentUrl) {
+            const data = await fetchJson(contentUrl);
+            if (data && (data.seo || data.blocks)) return data;
+          }
         }
+      }
+      if (contentBlob && contentBlob.url) {
+        const data = await fetchJson(contentBlob.url);
+        if (data && (data.seo || data.blocks)) return data;
+      }
+    } catch (_) {}
+  }
+  if (blobGet) {
+    try {
+      const pointerResult = await blobGet(BLOB_POINTER_PATH, opts);
+      if (pointerResult && pointerResult.stream) {
+        const url = (await streamToText(pointerResult.stream)).trim();
+        if (url) {
+          const data = await fetchJson(url);
+          if (data && (data.seo || data.blocks)) return data;
+        }
+      }
+    } catch (_) {}
+    try {
+      const result = await blobGet(BLOB_CONTENT_PATH, opts);
+      if (result && result.stream) {
+        const raw = await streamToText(result.stream);
+        return raw ? JSON.parse(raw) : null;
       }
     } catch (_) {}
   }
@@ -199,6 +210,20 @@ app.get('/api/storage-status', (req, res) => {
     persistent: false,
     message: 'Changes will not persist after reload. Add a Vercel Blob store in your project: Storage → Create Database → Blob, then redeploy.'
   });
+});
+
+app.get('/api/debug-blob', async (req, res) => {
+  if (!IS_VERCEL) return res.json({ ok: true, message: 'Local' });
+  const out = { hasToken: !!BLOB_READ_WRITE_TOKEN, blobCount: 0, pathnames: [], error: null };
+  if (!blobList) return res.json(out);
+  try {
+    const { blobs } = await blobList({ prefix: 'cms-landing/', access: 'public' });
+    out.blobCount = (blobs && blobs.length) || 0;
+    out.pathnames = (blobs || []).map((b) => b.pathname || b.url);
+  } catch (e) {
+    out.error = e && e.message;
+  }
+  res.json(out);
 });
 
 app.get('/api/content', async (req, res) => {
