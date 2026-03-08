@@ -90,12 +90,12 @@ const DEFAULT_CONTENT = { seo: { description: '' }, blocks: [] };
 async function readContentFromBlob() {
   if (!USE_BLOB || !blobList || !blobGet) return null;
   try {
-    const { blobs } = await blobList({ prefix: 'cms-landing/', access: 'private' });
+    const { blobs } = await blobList({ prefix: 'cms-landing/', access: 'public' });
     const contentBlob = (blobs && blobs.length)
       ? (blobs.find((b) => (b.pathname || '').endsWith('content.json')) || blobs[0])
       : null;
     if (!contentBlob || !contentBlob.url) return null;
-    const result = await blobGet(contentBlob.url, { access: 'private' });
+    const result = await blobGet(contentBlob.url, { access: 'public' });
     if (result && result.stream) {
       const raw = await streamToText(result.stream);
       return raw ? JSON.parse(raw) : null;
@@ -140,7 +140,7 @@ async function writeContent(data) {
   if (USE_BLOB && blobPut) {
     const body = JSON.stringify(data, null, 2);
     await blobPut(BLOB_CONTENT_PATH, body, {
-      access: 'private',
+      access: 'public',
       contentType: 'application/json',
       addRandomSuffix: false,
       allowOverwrite: true
