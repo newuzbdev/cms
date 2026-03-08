@@ -69,10 +69,31 @@ const upload = multer({
 
 const DEFAULT_CONTENT = { seo: { description: '' }, blocks: [] };
 
+async function readContentFromBlob() {
+  if (!USE_BLOB || !blobGet) return null;
+  try {
+    const result = await blobGet({
+      urlOrPathname: BLOB_CONTENT_PATH,
+      access: 'private'
+    });
+    if (result && result.stream) {
+      const raw = await streamToText(result.stream);
+      return raw ? JSON.parse(raw) : null;
+    }
+  } catch (_) {}
+  return null;
+}
+
 async function readContent() {
-  if (USE_BLOB && blobList && blobGet) {
+  if (USE_BLOB && blobGet) {
     try {
-      const { blobs } = await blobList({ prefix: 'cms-landing/' });
+      let data = await readContentFromBlob();
+      if (data) return data;
+      let blobs = [];
+      if (blobList) {
+        const listRes = await blobList({ prefix: 'cms-landing/' });
+        blobs = listRes.blobs || [];
+      }
       const contentBlob = (blobs && blobs.length)
         ? (blobs.find((b) => (b.pathname || '').endsWith('content.json')) || blobs[0])
         : null;
@@ -83,24 +104,13 @@ async function readContent() {
         });
         if (result && result.stream) {
           const raw = await streamToText(result.stream);
-          return raw ? JSON.parse(raw) : DEFAULT_CONTENT;
+          data = raw ? JSON.parse(raw) : null;
+          if (data) return data;
         }
       }
-      // No blob yet: seed once from bundled file, then from now on list will find it
       if (fs.existsSync(ORIGINAL_DATA_PATH)) {
         const raw = fs.readFileSync(ORIGINAL_DATA_PATH, 'utf8');
-        const data = JSON.parse(raw);
-        if (blobPut) {
-          await blobPut({
-            pathname: BLOB_CONTENT_PATH,
-            body: raw,
-            access: 'private',
-            contentType: 'application/json',
-            addRandomSuffix: false,
-            allowOverwrite: true
-          });
-        }
-        return data;
+        return JSON.parse(raw);
       }
       return DEFAULT_CONTENT;
     } catch (e) {
