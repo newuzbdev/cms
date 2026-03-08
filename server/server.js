@@ -256,9 +256,8 @@ app.put('/api/content', async (req, res) => {
       blocks: Array.isArray(data.blocks) ? data.blocks : current.blocks
     };
     await writeContent(merged);
-    const written = await readContent();
     res.set('Cache-Control', 'no-store');
-    res.json(written);
+    res.json(merged);
   } catch (e) {
     console.error('Save content error:', e && e.message);
     const msg = e && (e.message || String(e));
