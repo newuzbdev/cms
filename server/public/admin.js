@@ -462,7 +462,12 @@
       saveBtn.disabled = true;
       saveContent()
         .then(function (data) {
-          pageData = data;
+          pageData = {
+            seo: data.seo || { description: '' },
+            blocks: ensureBlockIds(sortBlocksByOrder(data.blocks || []))
+          };
+          seoDesc.value = pageData.seo.description || '';
+          renderBlocks();
           showStatus('Сохранено. Обновите страницу сайта (F5), чтобы увидеть изменения.');
         })
         .catch(function (err) {
