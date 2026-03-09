@@ -134,18 +134,24 @@
     const ratingText = escapeHtml(block.ratingText || '');
     return (
       '<header class="site-header" role="banner">' +
+      '<div class="container">' +
+      '<div class="site-header__inner">' +
       '<div class="header-top">' +
-      '<div class="container header-top__inner">' +
+      '<div class="header-top__inner">' +
       '<a href="/" class="header__logo">' + logoContent + (logoTagline ? '<span class="header__logo-tagline">' + logoTagline + '</span>' : '') + '</a>' +
-      (showRating ? '<div class="header__rating"><span class="header__stars" aria-hidden="true">★★★★★</span>' + (ratingText ? '<span class="header__rating-text">' + ratingText + '</span>' : '') + '</div>' : '') +
+      (showRating ? '<div class="header__rating"><span class="header__stars" aria-hidden="true">★★★★★</span>' + (ratingText ? '<span class="header__rating-text">' + ratingText.replace(' на основе', '<br>на основе') + '</span>' : '') + '</div>' : '') +
+      '<div class="header__separator"></div>' +
       '<div class="header__socials" aria-label="Мессенджеры">' + socialsHtml + '</div>' +
-      '<a href="tel:' + escapeAttr((phone || '').replace(/\s/g, '')) + '" class="header__phone">' + phone + '</a>' +
-      '<span class="header__schedule">' + schedule + '</span>' +
+      '<div class="header__contact-wrap">' +
+      '<a href="tel:' + escapeAttr((phone || '').replace(/\s/g, '')) + '" class="header__phone"><svg viewBox="0 0 24 24" aria-hidden="true" class="header__phone-icon"><path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/></svg>' + phone + '</a>' +
+      '<span class="header__schedule"><span class="header__schedule-dot">·</span>' + schedule + '</span>' +
+      '</div>' +
+      '<div class="header__separator"></div>' +
       '<a href="' + ctaLink + '" class="btn btn_red header__cta">' + ctaText + '</a>' +
       '</div>' +
       '</div>' +
       '<nav class="header-nav" aria-label="Основное меню">' +
-      '<div class="container nav__container">' +
+      '<div class="nav__container">' +
 
       '<a href="/" class="mobile-bar-logo" aria-label="На главную">' + logoContent + '</a>' +
       '<div class="nav__wrap">' +
@@ -173,6 +179,8 @@
       '<button type="button" class="burger" aria-label="Меню" aria-expanded="false"><span></span><span></span><span></span></button>' +
       '</div>' +
       '</nav>' +
+      '</div>' +
+      '</div>' +
       '</header>'
     );
   }
@@ -360,7 +368,6 @@
       '<div class="footer__section footer__section--logo">' +
       '<a href="/" class="footer__logo">' + logoContent + '</a>' +
       '</div>' +
-      '<hr class="footer__divider">' +
 
       '<div class="footer__section footer__section--nav">' +
       navHtml +
@@ -373,30 +380,44 @@
 
       '<div class="footer__section footer__section--info">' +
       '<div class="footer__info-left">' +
+      '<div class="footer__info-left-inner">' +
       (address ? '<p>' + address + '</p>' : '') +
       (schedule ? '<p>' + schedule + '</p>' : '') +
-      '<div class="footer__phone-wrap">' +
-      (phone ? '<a href="tel:' + escapeAttr((phone || '').replace(/\s/g, '')) + '" class="footer__phone-link">' + phone + '</a>' : '') +
+      (phone ? '<p class="footer__phone-wrap"><a href="tel:' + escapeAttr((phone || '').replace(/\s/g, '')) + '" class="footer__phone-link">' + phone + '</a></p>' : '') +
       '<div class="footer__contact-socials">' + renderSocials(contactSocials) + '</div>' +
       '</div>' +
-      '</div>' +
-
       '<div class="footer__info-center">' +
       '<span class="footer__socials-label">Мы в соц.сетях:</span>' +
       '<div class="footer__socials">' + renderSocials(socials) + '</div>' +
       '</div>' +
+      '</div>' +
+
+    
 
       '<div class="footer__info-right">' +
-      '<button href="' + footerCtaLink + '" class="btn btn_red footer__cta" style="color: white;">' + footerCtaText + '</a>' +
+      '<a href="' + footerCtaLink + '" class="btn btn_red footer__cta" style="color: white;">' + footerCtaText + '</a>' +
+      (
+        Array.isArray(govLogos) && govLogos.length
+          ? '<div class="footer__gov-logos" aria-label="Гос. сервисы">' +
+            govLogos.filter(function (g) { return g && typeof g === 'object'; }).map(function (g) {
+              return (
+                '<span class="footer__gov-item">' +
+                  '<img src="/public/my-cta-icon.svg" alt="" class="footer__cta-icon" style="vertical-align:middle; width:24px; height:24px; margin-right:4px;">' +
+                  '<a class="footer__gov" href="' + escapeAttr(g.url || '#') + '" target="_blank" rel="noopener">' +
+                    escapeHtml(g.label || '') +
+                  '</a>' +
+                '</span>'
+              );
+            }).join('') +
+            '</div>'
+          : ''
+      ) +
       '</div>' +
       '</div>' +
 
       '<div class="footer__section footer__section--bottom">' +
       '<div class="footer__legal">' + legal + '</div>' +
-      (govHtml ? '<div class="footer__gov-logos" aria-label="Гос. сервисы">' + govHtml + '</div>' : '') +
       '</div>' +
-
-      '<hr class="footer__divider">' +
 
       '<div class="footer__section footer__section--seo">' +
       '<p class="footer__seo-text">' + seoTextBottom + '</p>' +

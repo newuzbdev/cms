@@ -3,7 +3,7 @@
   --color-surface: #ffffff;
   --color-header-bg: #EAF1F6;
   --color-text: #1a1a1a;
-  --color-text-muted: #5c5c5c;
+  --color-text-muted: #313131;
   --color-accent: #2154B2;
   --color-accent-hover: #193f8a;
   --color-accent-light: #e8eef8;
@@ -11,8 +11,8 @@
   --color-red-hover: #CC0A0A;
   --color-footer-bg: #ffffff;
   --font-sans: 'Inter', system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-  --container-max: 1200px;
-  --container-padding: clamp(1rem, 4vw, 2rem);
+  --container-max: 1300px;
+  --container-padding: clamp(1rem, 4vw, 1.8rem);
   --section-gap: clamp(2.5rem, 6vw, 4.5rem);
   --radius: 12px;
   --shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
@@ -35,7 +35,6 @@ body {
   font-size: clamp(0.9375rem, 1.5vw, 1rem);
   line-height: 1.6;
   color: var(--color-text);
-  background: var(--color-bg);
   overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -68,8 +67,6 @@ a:hover {
   max-width: var(--container-max);
   margin-left: auto;
   margin-right: auto;
-  padding-left: var(--container-padding);
-  padding-right: var(--container-padding);
   min-width: 0;
 }
 
@@ -122,22 +119,36 @@ a:hover {
   position: sticky;
   top: 0;
   z-index: 100;
-  background: var(--color-header-bg);
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+  background: transparent;
+  padding-bottom: 0.5rem;
+}
+
+
+
+.site-header__inner {
+  background: var(--color-surface);
+  border-bottom-left-radius: 12px;
+  border-bottom-right-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
 }
 
 .header-top {
-  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+  border-right: 1px solid #2154B2;
+  border-left: 1px solid #2154B2;
+  background: var(--color-header-bg);
+  padding-left: clamp(1rem, 2vw, 2rem);
+  padding-right: clamp(1rem, 2vw, 2rem);
 }
 
 .header-top__inner {
   display: flex;
   align-items: center;
-  flex-wrap: wrap;
-  gap: clamp(0.75rem, 2vw, 1.25rem);
+  flex-wrap: nowrap;
+  gap: clamp(0.75rem, 1.5vw, 1.25rem);
   padding-top: 0.75rem;
   padding-bottom: 0.75rem;
-  min-height: 56px;
+  min-height: 64px;
 }
 
 .header__logo {
@@ -204,9 +215,9 @@ a:hover {
 
 .header__rating {
   display: flex;
-  align-items: center;
-  gap: 0.375rem;
-  flex-wrap: wrap;
+  flex-direction: column;
+  align-items: start;
+  gap: 0.25rem;
 }
 
 .header__stars {
@@ -252,11 +263,35 @@ a:hover {
   fill: var(--color-accent);
 }
 
+.header__separator {
+  width: 1.3px;
+  height: 24px;
+  background: #2154b271;
+  margin: 0 clamp(0.5rem, 1vw, 1.25rem);
+  flex-shrink: 0;
+}
+
+.header__contact-wrap {
+  display: flex;
+  align-items: center;
+  gap: clamp(0.5rem, 1vw, 1rem);
+  white-space: nowrap;
+}
+
 .header__phone {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
   color: var(--color-text);
   font-weight: 700;
-  font-size: clamp(0.875rem, 1.4vw, 1rem);
+  font-size: clamp(0.5rem, 1vw, 0.75rem);
   white-space: nowrap;
+}
+
+.header__phone-icon {
+  width: 16px;
+  height: 16px;
+  fill: var(--color-accent);
 }
 
 .header__phone:hover {
@@ -265,15 +300,24 @@ a:hover {
 }
 
 .header__schedule {
-  color: var(--color-text-muted);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  color: var(--color-accent);
   font-size: 0.8125rem;
   white-space: nowrap;
+}
+
+.header__schedule-dot {
+  color: var(--color-accent);
+  opacity: 0.5;
+  font-weight: bold;
 }
 
 .header__cta {
   margin-left: auto;
   font-size: 0.875rem;
-  padding: 0.625rem 1.25rem;
+  padding: 0.5rem 1rem;
   border-radius: 6px;
 }
 
@@ -286,6 +330,7 @@ a:hover {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  padding: 0 clamp(1rem, 2vw, 2rem);
 }
 
 .nav__wrap {
@@ -397,6 +442,17 @@ a:hover {
     position: sticky;
     top: 0;
     z-index: 100;
+    padding: 0;
+  }
+
+  .site-header .container {
+    padding: 0;
+  }
+
+  .site-header__inner {
+    border-radius: 0;
+    box-shadow: none;
+    background: transparent;
   }
 
   .header-top {
@@ -920,7 +976,7 @@ a:hover {
   background: #CC0A0A;
   color: #fff;
   font-weight: 600;
-  padding: 0.375rem 7.25rem;
+  padding: 0.375rem 9.25rem;
   border-radius: 8px;
   font-size: 1rem;
   letter-spacing: 0.01em;
@@ -965,7 +1021,7 @@ a:hover {
   .hero__title {
     font-size: clamp(2rem, 8vw, 2.5rem);
     line-height: 1.15;
-    font-weight: 700;
+    font-weight: 800;
     letter-spacing: 0.02em;
     position: relative;
     z-index: 5;
@@ -984,9 +1040,9 @@ a:hover {
     order: 2;
     z-index: 1;
     position: relative;
-    width: calc(100% + 2rem);
-    margin-left: -1rem;
-    /* stretch beyond container padding */
+    width: 100%;
+    margin-left: 0;
+    margin-top: 0.75rem;
     display: block;
     line-height: 0;
   }
@@ -995,7 +1051,7 @@ a:hover {
     width: 100%;
     height: auto;
     object-fit: contain;
-    border-radius: 0;
+    border-radius: 18px;
     display: block;
   }
 
@@ -1006,7 +1062,8 @@ a:hover {
     position: relative;
     padding: 0;
     margin-top: -50px;
-    margin-right: -15px;
+    margin-right: 0.5rem;
+    left: 0;
     /* Pull the button UP into the transparent bottom cutout */
     display: flex;
     justify-content: flex-end;
@@ -1020,7 +1077,7 @@ a:hover {
     border-radius: 6px;
     width: auto;
     /* optional: limit width if it shouldn't take full remaining space */
-    min-width: 70%;
+    min-width: 67%;
     text-align: center;
   }
 
@@ -1117,6 +1174,25 @@ a:hover {
   .features__grid {
     flex-direction: column;
     align-items: flex-start;
+    gap: 1.25rem;
+  }
+
+  .block_features .container {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+
+  .feature-item {
+    gap: 1rem;
+  }
+
+  .feature-item__icon {
+    width: 52px;
+    height: 52px;
+  }
+
+  .feature-item__title {
+    font-size: 0.975rem;
   }
 }
 
@@ -1168,10 +1244,33 @@ a:hover {
 @media (max-width: 768px) {
   .service-cards__grid {
     grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+
+  .block_service_cards .container {
+    padding-left: 1rem;
+    padding-right: 1rem;
   }
 
   .service-card {
-    padding: 1.75rem;
+    padding: 1.5rem 1.5rem 1.75rem;
+    border-radius: 16px;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
+    border-color: #f0f0f0;
+  }
+
+  .service-card__title {
+    font-size: 1.25rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .service-card__text {
+    font-size: 0.875rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .service-card__btn {
+    font-size: 0.9375rem;
   }
 }
 
@@ -1287,6 +1386,41 @@ a:hover {
   }
 }
 
+@media (max-width: 768px) {
+  .block_online_services {
+    padding: 1.75rem 0 2.5rem;
+  }
+
+  .block_online_services .container {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+
+  .online-services__title {
+    font-size: 1.35rem;
+    line-height: 1.3;
+    margin-bottom: 0.75rem;
+  }
+
+  .online-services__subtitle {
+    font-size: 0.875rem;
+    margin-bottom: 1.5rem;
+    color: #777;
+  }
+
+  .online-service-item {
+    padding: 1rem 1.25rem;
+    border-radius: 12px;
+    border: 1px solid #f0f0f0;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);
+  }
+
+  .online-service-item__text {
+    font-size: 0.9375rem;
+    line-height: 1.5;
+  }
+}
+
 /* ===== Footer ===== */
 .block_footer.site-footer {
   margin-top: auto;
@@ -1294,6 +1428,19 @@ a:hover {
   background: var(--color-footer-bg);
   color: var(--color-text);
   border-top: 1px solid rgba(0, 0, 0, 0.08);
+}
+.footer__gov-item{
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.8125rem;
+  color: #333;
+  font-weight: 500;
+}
+.footer__gov-item img{
+  width: 24px;
+  height: 24px;
+  vertical-align: middle;
 }
 
 .site-footer a {
@@ -1312,7 +1459,7 @@ a:hover {
 
 .footer__section--logo {
   padding-top: 0;
-  padding-bottom: 1.5rem;
+  padding-bottom: 0.5rem;
 }
 
 .footer__divider {
@@ -1327,7 +1474,7 @@ a:hover {
   flex-wrap: wrap;
   gap: clamp(1rem, 2vw, 2.5rem);
   justify-content: space-between;
-  padding: 1.5rem 0;
+  padding: 0.5rem 0 1.5rem 0;
 }
 
 .footer__nav-link {
@@ -1341,7 +1488,7 @@ a:hover {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: clamp(1.5rem, 3vw, 2rem);
-  padding: 2rem 0;
+  padding: 0 0 2rem;
 }
 
 .footer__col-title {
@@ -1369,11 +1516,22 @@ a:hover {
   display: flex;
   flex-wrap: wrap;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-end;
   gap: 2rem;
   padding: 2rem 0;
 }
-
+.footer__info-left{
+  display: flex;
+  justify-content: flex-start;
+  align-items: flex-start;
+  gap: 1rem;
+}
+.footer__info-left-inner{
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  width: 50%;
+}
 .footer__info-left p {
   margin: 0 0 0.5rem;
   font-size: 0.8125rem;
@@ -1381,10 +1539,8 @@ a:hover {
 }
 
 .footer__phone-wrap {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  margin-top: 0.75rem;
+  margin: 0.875rem 0;
+  display: block;
 }
 
 .footer__phone-link {
@@ -1398,9 +1554,14 @@ a:hover {
   gap: 0.5rem;
 }
 
+.footer__contact-socials .footer__social {
+  background: var(--color-accent);
+}
+
 .footer__info-center {
   display: flex;
-  align-items: center;
+  flex-direction: column;
+  align-items: flex-start;
   gap: 0.75rem;
 }
 
@@ -1408,6 +1569,7 @@ a:hover {
   font-size: 0.8125rem;
   color: #333;
   font-weight: 500;
+  display: block;
 }
 
 .footer__socials {
@@ -1468,7 +1630,9 @@ a:hover {
 
 .footer__info-right {
   display: flex;
-  justify-content: flex-end;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 1.5rem;
   color: white !important;
 }
 
@@ -1482,10 +1646,10 @@ a:hover {
 .footer__section--bottom {
   display: flex;
   flex-wrap: wrap;
-  justify-content: space-between;
+  justify-content: flex-start;
   align-items: center;
   gap: 1rem;
-  padding: 1.5rem 0;
+  padding: 0.5rem 0 0;
 }
 
 .footer__legal {
@@ -1526,28 +1690,70 @@ a:hover {
 }
 
 @media (max-width: 768px) {
+  .block_footer.site-footer {
+    padding: 1.5rem 0 2.25rem;
+  }
+
+  .block_footer.site-footer .container {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+
   .footer__section--nav {
     flex-direction: column;
     gap: 1rem;
+    padding-top: 0.75rem;
+    padding-bottom: 1.25rem;
+  }
+
+  .footer__nav-link {
+    width: 100%;
+    font-size: 0.9375rem;
+    font-weight: 500;
   }
 
   .footer__section--grid {
     grid-template-columns: 1fr;
+    row-gap: 0.75rem;
+  }
+
+  .footer__col {
+    border-radius: 10px;
+    padding: 0.75rem 0;
+  }
+
+  .footer__col-title {
+    margin-bottom: 0.35rem;
+    font-size: 0.875rem;
+  }
+
+  .footer__col-link {
+    font-size: 0.875rem;
   }
 
   .footer__section--info {
     flex-direction: column;
     align-items: flex-start;
+    gap: 1.25rem;
   }
 
   .footer__info-right {
     width: 100%;
+    align-items: flex-start;
     justify-content: flex-start;
+  }
+
+  .footer__cta {
+    width: 100%;
+    text-align: center;
+    font-size: 0.9375rem;
+    padding: 0.9rem 1rem;
   }
 
   .footer__section--bottom {
     flex-direction: column;
     align-items: flex-start;
+    gap: 0.5rem;
   }
 
   .footer__gov-logos {
